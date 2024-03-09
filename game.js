@@ -3,15 +3,15 @@ const ctx = canvas.getContext('2d');
 
 let speed = 7;
 let tileCount = 20;
-let tileSize = canvas.width / tileCount - 2;
+let tileSize = canvas.width / tileCount;
 
 let headX = 10;
 let headY = 10;
 const snakeParts = [];
 let tailLength = 2;
 
-let appleX = 5;
-let appleY = 5;
+let appleX = Math.floor(Math.random() * tileCount);
+let appleY = Math.floor(Math.random() * tileCount);
 
 let xVelocity = 0;
 let yVelocity = 0;
@@ -20,8 +20,7 @@ let score = 0;
 
 function drawGame() {
   changeSnakePosition();
-  let result = isGameOver();
-  if (result) {
+  if (isGameOver()) {
     drawGameOver();
     return;
   }
@@ -35,7 +34,7 @@ function drawGame() {
 }
 
 function isGameOver() {
-  if (headX < 0 || headX >= tileCount || headY < 0 || headY >= tileCount) {
+  if (headX < 0 || headX === tileCount || headY < 0 || headY === tileCount) {
     return true;
   }
 
@@ -52,15 +51,9 @@ function drawGameOver() {
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = 'red';
+  ctx.fillStyle = 'white';
   ctx.font = '50px Verdana';
-  let gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
-  gradient.addColorStop("0", "magenta");
-  gradient.addColorStop("0.5", "blue");
-  gradient.addColorStop("1.0", "red");
-  ctx.fillStyle = gradient;
-
-  ctx.fillText('Game Over', canvas.width / 6, canvas.height / 2);
+  ctx.fillText('Game Over', canvas.width / 6.5, canvas.height / 2);
   ctx.font = '20px Verdana';
   ctx.fillText('Score: ' + score, canvas.width / 2.5, canvas.height / 1.5);
 }
@@ -80,18 +73,63 @@ function drawSnake() {
     snakeParts.shift();
   }
 
-  ctx.fillStyle = 'orange';
+  // Draw head
+  ctx.fillStyle = 'darkgreen';
   ctx.fillRect(headX * tileCount, headY * tileCount, tileSize, tileSize);
 }
 
-// Other functions (drawApple, checkAppleCollision, drawScore, touchStart, touchMove, keyDown) remain the same...
+function changeSnakePosition() {
+  headX += xVelocity;
+  headY += yVelocity;
+}
+
+function drawApple() {
+  ctx.fillStyle = 'red';
+  ctx.fillRect(appleX * tileCount, appleY * tileCount, tileSize, tileSize);
+}
+
+function checkAppleCollision() {
+  if (appleX === headX && appleY === headY) {
+    appleX = Math.floor(Math.random() * tileCount);
+    appleY = Math.floor(Math.random() * tileCount);
+    tailLength++;
+    score++;
+  }
+}
+
+function drawScore() {
+  ctx.fillStyle = 'white';
+  ctx.font = '20px Verdana';
+  ctx.fillText("Score " + score, 10, 30);
+}
 
 document.body.addEventListener('keydown', keyDown);
-canvas.addEventListener('touchstart', touchStart, { passive: false });
-canvas.addEventListener('touchmove', touchMove, { passive: false });
 
 function keyDown(event) {
-  // Key controls (Up, Down, Left, Right) remain the same...
+  // Up
+  if (event.keyCode === 38) {
+    if (yVelocity == 1) return;
+    yVelocity = -1;
+    xVelocity = 0;
+  }
+  // Down
+  else if (event.keyCode === 40) {
+    if (yVelocity == -1) return;
+    yVelocity = 1;
+    xVelocity = 0;
+  }
+  // Left
+  else if (event.keyCode === 37) {
+    if (xVelocity == 1) return;
+    xVelocity = -1;
+    yVelocity = 0;
+  }
+  // Right
+  else if (event.keyCode === 39) {
+    if (xVelocity == -1) return;
+    xVelocity = 1;
+    yVelocity = 0;
+  }
 }
 
 drawGame();

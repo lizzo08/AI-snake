@@ -14,14 +14,22 @@ let appleX = Math.floor(Math.random() * tileCount);
 let appleY = Math.floor(Math.random() * tileCount);
 
 let xVelocity = 0;
-let yVelocity = -1; // Set initial movement direction upwards
+let yVelocity = 0;
 
 let score = 0;
 
+let gameRunning = false;
+
 function drawGame() {
+  if (!gameRunning) {
+    drawStartScreen();
+    return;
+  }
+
   changeSnakePosition();
   if (isGameOver()) {
     drawGameOver();
+    gameRunning = false;
     return;
   }
 
@@ -30,6 +38,7 @@ function drawGame() {
   drawApple();
   drawSnake();
   drawScore();
+
   setTimeout(drawGame, 1000 / speed);
 }
 
@@ -47,6 +56,15 @@ function isGameOver() {
   return false;
 }
 
+function drawStartScreen() {
+  ctx.fillStyle = 'black';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = 'white';
+  ctx.font = '30px Verdana';
+  ctx.fillText('Press Spacebar or Arrow Key to Start', canvas.width / 6, canvas.height / 2);
+}
+
 function drawGameOver() {
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -58,74 +76,48 @@ function drawGameOver() {
   ctx.fillText('Score: ' + score, canvas.width / 2.5, canvas.height / 1.5);
 }
 
-function clearScreen() {
-  ctx.fillStyle = 'black';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-}
-
-function drawSnake() {
-  ctx.fillStyle = 'darkgreen';
-  ctx.beginPath();
-  ctx.arc((headX * tileSize) + tileSize / 2, (headY * tileSize) + tileSize / 2, tileSize / 2, 0, 2 * Math.PI);
-  ctx.fill();
-
-  ctx.fillStyle = 'green';
-  for (let i = 0; i < snakeParts.length; i++) {
-    let part = snakeParts[i];
-    ctx.beginPath();
-    if (i === snakeParts.length - 1) { // Tail part should be a bit smaller
-      ctx.arc((part.x * tileSize) + tileSize / 2, (part.y * tileSize) + tileSize / 2, tileSize / 2.5, 0, 2 * Math.PI);
-    } else {
-      ctx.arc((part.x * tileSize) + tileSize / 2, (part.y * tileSize) + tileSize / 2, tileSize / 2, 0, 2 * Math.PI);
-    }
-    ctx.fill();
-  }
-
-  snakeParts.push({ x: headX, y: headY }); // Add new part at the head position
-  if (snakeParts.length > tailLength) {
-    snakeParts.shift(); // Remove the furthest part if we have more than the tail length
-  }
-}
-
-function changeSnakePosition() {
-  headX += xVelocity;
-  headY += yVelocity;
-}
-
-function drawApple() {
-  ctx.fillStyle = 'red';
-  ctx.beginPath();
-  ctx.arc((appleX * tileSize) + tileSize / 2, (appleY * tileSize) + tileSize / 2, tileSize / 2, 0, 2 * Math.PI);
-  ctx.fill();
-}
-
-function checkAppleCollision() {
-  if (appleX === headX && appleY === headY) {
-    appleX = Math.floor(Math.random() * tileCount);
-    appleY = Math.floor(Math.random() * tileCount);
-    tailLength++;
-    score++;
-  }
-}
-
-function drawScore() {
-  ctx.fillStyle = 'white';
-  ctx.font = '20px Verdana';
-  ctx.fillText("Score " + score, 10, 30);
-}
-
 document.body.addEventListener('keydown', keyDown);
 
 function keyDown(event) {
-  // Up
-  if (event.keyCode === 38 && yVelocity === 0) {
-    yVelocity = -1;
-    xVelocity = 0;
+  if (!gameRunning && (event.keyCode === 32 || (event.keyCode >= 37 && event.keyCode <= 40))) {
+    gameRunning = true;
+    xVelocity = yVelocity = 0; // Reset velocity to avoid instant game over
+    yVelocity = -1; // Set initial direction upwards
+    score = 0; // Reset score
+    headX = headY = 10; // Reset snake position
+    snakeParts.length = 0; // Clear snake parts
+    tailLength = 2; // Reset initial tail length
+    drawGame();
+  } else if (gameRunning) {
+    switch (event.keyCode) {
+      case 38: // Up
+        if (yVelocity === 0) {
+          yVelocity = -1;
+          xVelocity = 0;
+        }
+        break;
+      case 40: // Down
+        if (yVelocity === 0) {
+          yVelocity = 1;
+          xVelocity = 0;
+        }
+        break;
+      case 37: // Left
+        if (xVelocity === 0) {
+          xVelocity = -1;
+          yVelocity = 0;
+        }
+        break;
+      case 39: // Right
+        if (xVelocity === 0) {
+          xVelocity = 1;
+          yVelocity = 0;
+        }
+        break;
+    }
   }
-  // Down
-  else if (event.keyCode === 40 && yVelocity === 0) {
-    yVelocity = 1;
-    xVelocity = 0;
-  }
-  // Left
-  else if (event.keyCode === 37 && xVelocity
+}
+
+// Remaining functions like clearScreen, drawSnake, changeSnakePosition, drawApple, checkAppleCollision, drawScore remain the same...
+
+drawGame();

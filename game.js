@@ -14,7 +14,7 @@ let appleX = Math.floor(Math.random() * tileCount);
 let appleY = Math.floor(Math.random() * tileCount);
 
 let xVelocity = 0;
-let yVelocity = 0;
+let yVelocity = -1; // Set initial movement direction upwards
 
 let score = 0;
 
@@ -34,7 +34,7 @@ function drawGame() {
 }
 
 function isGameOver() {
-  if (headX < 0 || headX === tileCount || headY < 0 || headY === tileCount) {
+  if (headX < 0 || headX >= tileCount || headY < 0 || headY >= tileCount) {
     return true;
   }
 
@@ -64,18 +64,27 @@ function clearScreen() {
 }
 
 function drawSnake() {
+  ctx.fillStyle = 'darkgreen';
+  ctx.beginPath();
+  ctx.arc((headX * tileSize) + tileSize / 2, (headY * tileSize) + tileSize / 2, tileSize / 2, 0, 2 * Math.PI);
+  ctx.fill();
+
   ctx.fillStyle = 'green';
-  for (let part of snakeParts) {
-    ctx.fillRect(part.x * tileCount, part.y * tileCount, tileSize, tileSize);
-  }
-  snakeParts.push({ x: headX, y: headY });
-  if (snakeParts.length > tailLength) {
-    snakeParts.shift();
+  for (let i = 0; i < snakeParts.length; i++) {
+    let part = snakeParts[i];
+    ctx.beginPath();
+    if (i === snakeParts.length - 1) { // Tail part should be a bit smaller
+      ctx.arc((part.x * tileSize) + tileSize / 2, (part.y * tileSize) + tileSize / 2, tileSize / 2.5, 0, 2 * Math.PI);
+    } else {
+      ctx.arc((part.x * tileSize) + tileSize / 2, (part.y * tileSize) + tileSize / 2, tileSize / 2, 0, 2 * Math.PI);
+    }
+    ctx.fill();
   }
 
-  // Draw head
-  ctx.fillStyle = 'darkgreen';
-  ctx.fillRect(headX * tileCount, headY * tileCount, tileSize, tileSize);
+  snakeParts.push({ x: headX, y: headY }); // Add new part at the head position
+  if (snakeParts.length > tailLength) {
+    snakeParts.shift(); // Remove the furthest part if we have more than the tail length
+  }
 }
 
 function changeSnakePosition() {
@@ -85,7 +94,9 @@ function changeSnakePosition() {
 
 function drawApple() {
   ctx.fillStyle = 'red';
-  ctx.fillRect(appleX * tileCount, appleY * tileCount, tileSize, tileSize);
+  ctx.beginPath();
+  ctx.arc((appleX * tileSize) + tileSize / 2, (appleY * tileSize) + tileSize / 2, tileSize / 2, 0, 2 * Math.PI);
+  ctx.fill();
 }
 
 function checkAppleCollision() {
@@ -107,29 +118,14 @@ document.body.addEventListener('keydown', keyDown);
 
 function keyDown(event) {
   // Up
-  if (event.keyCode === 38) {
-    if (yVelocity == 1) return;
+  if (event.keyCode === 38 && yVelocity === 0) {
     yVelocity = -1;
     xVelocity = 0;
   }
   // Down
-  else if (event.keyCode === 40) {
-    if (yVelocity == -1) return;
+  else if (event.keyCode === 40 && yVelocity === 0) {
     yVelocity = 1;
     xVelocity = 0;
   }
   // Left
-  else if (event.keyCode === 37) {
-    if (xVelocity == 1) return;
-    xVelocity = -1;
-    yVelocity = 0;
-  }
-  // Right
-  else if (event.keyCode === 39) {
-    if (xVelocity == -1) return;
-    xVelocity = 1;
-    yVelocity = 0;
-  }
-}
-
-drawGame();
+  else if (event.keyCode === 37 && xVelocity

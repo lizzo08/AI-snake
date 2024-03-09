@@ -78,11 +78,6 @@ function clearScreen() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
-function drawSnake() {
-  ctx.fillStyle = 'green';
-  snakeParts.forEach(part => {
-    ctx.fillRect(part.x * tileSize, part.y * tileSize, tileSize, tileSize);
-  });
   snakeParts.push({ x: headX, y: headY });
   if (snakeParts.length > tailLength) {
     snakeParts.shift();
@@ -96,11 +91,27 @@ function changeSnakePosition() {
   headX += xVelocity;
   headY += yVelocity;
 }
+function drawSnake() {
+  // Increase the rounding effect for the snake parts
+  snakeParts.forEach(part => {
+    ctx.beginPath();
+    ctx.arc(part.x * tileSize + tileSize / 2, part.y * tileSize + tileSize / 2, tileSize / 2.2, 0, 2 * Math.PI);
+    ctx.fillStyle = 'green';
+    ctx.fill();
+  });
+
+  // Additional styling for the snake head for differentiation
+  ctx.beginPath();
+  ctx.arc(headX * tileSize + tileSize / 2, headY * tileSize + tileSize / 2, tileSize / 2.2, 0, 2 * Math.PI);
+  ctx.fillStyle = 'darkgreen';
+  ctx.fill();
+}
 
 function drawApple() {
-  ctx.fillStyle = 'red';
+  // More rounded apple
   ctx.beginPath();
-  ctx.arc((appleX * tileSize) + tileSize / 2, (appleY * tileSize) + tileSize / 2, tileSize / 2, 0, 2 * Math.PI);
+  ctx.arc(appleX * tileSize + tileSize / 2, appleY * tileSize + tileSize / 2, tileSize / 2.2, 0, 2 * Math.PI);
+  ctx.fillStyle = 'red';
   ctx.fill();
 }
 

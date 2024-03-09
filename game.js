@@ -4,6 +4,7 @@ const ctx = canvas.getContext('2d');
 let speed = 7;
 let tileCount = 20;
 let tileSize = canvas.width / tileCount;
+let gameRunning = false;
 
 let headX = 10;
 let headY = 10;
@@ -18,18 +19,15 @@ let yVelocity = 0;
 
 let score = 0;
 
-let gameRunning = false;
-
 function drawGame() {
   if (!gameRunning) {
-    drawStartScreen();
+    showStartScreen();
     return;
   }
 
   changeSnakePosition();
   if (isGameOver()) {
     drawGameOver();
-    gameRunning = false;
     return;
   }
 
@@ -38,12 +36,20 @@ function drawGame() {
   drawApple();
   drawSnake();
   drawScore();
-
   setTimeout(drawGame, 1000 / speed);
 }
 
+function showStartScreen() {
+  ctx.fillStyle = 'black';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = 'white';
+  ctx.font = '20px Verdana';
+  ctx.fillText('Press Spacebar or Arrow Key to Start', canvas.width / 10, canvas.height / 2);
+}
+
 function isGameOver() {
-  if (headX < 0 || headX >= tileCount || headY < 0 || headY >= tileCount) {
+  if (headX < 0 || headX === tileCount || headY < 0 || headY === tileCount) {
     return true;
   }
 
@@ -54,15 +60,6 @@ function isGameOver() {
   }
 
   return false;
-}
-
-function drawStartScreen() {
-  ctx.fillStyle = 'black';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  ctx.fillStyle = 'white';
-  ctx.font = '30px Verdana';
-  ctx.fillText('Press Spacebar or Arrow Key to Start', canvas.width / 6, canvas.height / 2);
 }
 
 function drawGameOver() {
@@ -81,43 +78,32 @@ document.body.addEventListener('keydown', keyDown);
 function keyDown(event) {
   if (!gameRunning && (event.keyCode === 32 || (event.keyCode >= 37 && event.keyCode <= 40))) {
     gameRunning = true;
-    xVelocity = yVelocity = 0; // Reset velocity to avoid instant game over
-    yVelocity = -1; // Set initial direction upwards
-    score = 0; // Reset score
-    headX = headY = 10; // Reset snake position
-    snakeParts.length = 0; // Clear snake parts
-    tailLength = 2; // Reset initial tail length
+    xVelocity = 0; // Initialize movement direction - can adjust based on preference
+    yVelocity = -1; // Starts moving upwards
     drawGame();
   } else if (gameRunning) {
-    switch (event.keyCode) {
-      case 38: // Up
-        if (yVelocity === 0) {
-          yVelocity = -1;
-          xVelocity = 0;
-        }
-        break;
-      case 40: // Down
-        if (yVelocity === 0) {
-          yVelocity = 1;
-          xVelocity = 0;
-        }
-        break;
-      case 37: // Left
-        if (xVelocity === 0) {
-          xVelocity = -1;
-          yVelocity = 0;
-        }
-        break;
-      case 39: // Right
-        if (xVelocity === 0) {
-          xVelocity = 1;
-          yVelocity = 0;
-        }
-        break;
+    // Up
+    if (event.keyCode === 38 && yVelocity === 0) {
+      yVelocity = -1;
+      xVelocity = 0;
+    }
+    // Down
+    else if (event.keyCode === 40 && yVelocity === 0) {
+      yVelocity = 1;
+      xVelocity = 0;
+    }
+    // Left
+    else if (event.keyCode === 37 && xVelocity === 0) {
+      xVelocity = -1;
+      yVelocity = 0;
+    }
+    // Right
+    else if (event.keyCode === 39 && xVelocity === 0) {
+      xVelocity = 1;
+      yVelocity = 0;
     }
   }
 }
 
-// Remaining functions like clearScreen, drawSnake, changeSnakePosition, drawApple, checkAppleCollision, drawScore remain the same...
-
-drawGame();
+// Call showStartScreen initially to display the start message
+showStartScreen();

@@ -1,17 +1,27 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Snake Game</title>
-  <style>
-    canvas {
-      background: #000;
-      display: block;
-      margin: auto;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+  }
+
+  canvas {
+    background: #000;
+    width: 30vw;  /* Responsive width based on viewport width */
+    height: 30vw; /* Maintain aspect ratio for square canvas */
+  }
+</style>
 </head>
 <body>
-  <canvas id="gameCanvas" width="400" height="400"></canvas>
+  <canvas id="gameCanvas"></canvas>
   <script src="game.js"></script>
 </body>
 </html>

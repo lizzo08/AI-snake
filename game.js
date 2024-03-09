@@ -1,32 +1,29 @@
-To enhance the code for better efficiency and to ensure it's compliant and free from errors or warnings, I will refactor the given JavaScript, incorporating touch screen support for mobile gameplay. The touch support will enable moving the snake in different directions based on the swipe direction on a touch screen device.
-
-Here's the revised and enhanced JavaScript code (`game.js`):
-
-```javascript
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 let speed = 7;
 let tileCount = 20;
 let tileSize = canvas.width / tileCount - 2;
+
 let headX = 10;
 let headY = 10;
 const snakeParts = [];
 let tailLength = 2;
-let appleX = Math.floor(Math.random() * tileCount);
-let appleY = Math.floor(Math.random() * tileCount);
+
+let appleX = 5;
+let appleY = 5;
+
 let xVelocity = 0;
 let yVelocity = 0;
+
 let score = 0;
-let touchXStart = null;
-let touchYStart = null;
+let touchX = 0;
+let touchY = 0;
 
 function drawGame() {
   changeSnakePosition();
-  if (isGameOver()) {
-    ctx.fillStyle = 'white';
-    ctx.font = '50px Verdana';
-    ctx.fillText('Game Over!', canvas.width / 6.5, canvas.height / 2);
+  let result = isGameOver();
+  if (result) {
     return;
   }
 
@@ -38,6 +35,24 @@ function drawGame() {
   setTimeout(drawGame, 1000 / speed);
 }
 
+function isGameOver() {
+  if (xVelocity === 0 && yVelocity === 0) {
+    return false;
+  }
+
+  if (headX < 0 || headX === tileCount || headY < 0 || headY === tileCount) {
+    return true;
+  }
+
+  for (let part of snakeParts) {
+    if (part.x === headX && part.y === headY) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function clearScreen() {
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -45,10 +60,9 @@ function clearScreen() {
 
 function drawSnake() {
   ctx.fillStyle = 'green';
-  for (const part of snakeParts) {
+  for (let part of snakeParts) {
     ctx.fillRect(part.x * tileCount, part.y * tileCount, tileSize, tileSize);
   }
-
   snakeParts.push({ x: headX, y: headY });
   while (snakeParts.length > tailLength) {
     snakeParts.shift();
@@ -63,22 +77,9 @@ function changeSnakePosition() {
   headY += yVelocity;
 }
 
-function isGameOver() {
-  if (xVelocity === 0 && yVelocity === 0) {
-    return false;
-  }
-
-  if (headX < 0 || headX === tileCount || headY < 0 || headY === tileCount) {
-    return true;
-  }
-
-  for (const part of snakeParts) {
-    if (part.x === headX && part.y === headY) {
-      return true;
-    }
-  }
-
-  return false;
+function drawApple() {
+  ctx.fillStyle = 'red';
+  ctx.fillRect(appleX * tileCount, appleY * tileCount, tileSize, tileSize);
 }
 
 function checkAppleCollision() {
@@ -90,59 +91,63 @@ function checkAppleCollision() {
   }
 }
 
-function drawApple() {
-  ctx.fillStyle = 'red';
-  ctx.fillRect(appleX * tileCount, appleY * tileCount, tileSize, tileSize);
-}
-
 function drawScore() {
   ctx.fillStyle = 'white';
   ctx.font = '10px Verdana';
-  ctx.fillText('Score ' + score, canvas.width - 50, 10);
+  ctx.fillText("Score " + score, canvas.width - 50, 10);
 }
 
+function touchStart(event) {
+  touchX = event.changedTouches[0].screenX;
+  touchY = event.changedTouches[0].screenY;
+}
+
+function touchMove(event) {
+  const deltaX = event.changedTouches[0].screenX - touchX;
+  const deltaY = event.changedTouches[0].screenY - touchY;
+  
+  if (Math.abs(deltaX) > Math.abs(deltaY)) {
+    if (deltaX > 0 && xVelocity === 0) {
+      xVelocity = 1; yVelocity = 0;
+    } else if (deltaX < 0 && xVelocity === 0) {
+      xVelocity = -1; yVelocity = 0;
+    }
+  } else {
+    if (deltaY > 0 && yVelocity === 0) {
+      yVelocity = 1; xVelocity = 0;
+    } else if (deltaY < 0 && yVelocity === 0) {
+      yVelocity = -1; xVelocity = 0;
+    }
+  }
+
+  event.preventDefault();
+}
+
+document.body.addEventListener('keydown', keyDown);
+canvas.addEventListener('touchstart', touchStart, { passive: false });
+canvas.addEventListener('touchmove', touchMove, { passive: false });
+
 function keyDown(event) {
-  switch(event.keyCode) {
-    case 38: // Up
-      if (yVelocity == 1) return;
-      yVelocity = -1;
-      xVelocity = 0;
-      break;
-    case 40: // Down
-      if (yVelocity == -1) return;
-      yVelocity = 1;
-      xVelocity = 0;
-      break;
-    case 37: // Left
-      if (xVelocity == 1) return;
-      xVelocity = -1;
-      yVelocity = 0;
-      break;
-    case 39: // Right
-      if (xVelocity == -1) return;
-      xVelocity = 1;
-      yVelocity = 0;
-      break;
+  // Up
+  if (event.keyCode === 38 && yVelocity === 0) {
+    yVelocity = -1;
+    xVelocity = 0;
+  }
+  // Down
+  if (event.keyCode === 40 && yVelocity === 0) {
+    yVelocity = 1;
+    xVelocity = 0;
+  }
+  // Left
+  if (event.keyCode === 37 && xVelocity === 0) {
+    xVelocity = -1;
+    yVelocity = 0;
+  }
+  // Right
+  if (event.keyCode === 39 && xVelocity === 0) {
+    xVelocity = 1;
+    yVelocity = 0;
   }
 }
 
-canvas.addEventListener('touchstart', e => {
-  const touch = e.touches[0];
-  touchXStart = touch.clientX;
-  touchYStart = touch.clientY;
-  e.preventDefault();
-});
-
-canvas.addEventListener('touchmove', e => {
-  if (!touchXStart || !touchYStart) return;
-
-  const xDiff = touchXStart - e.touches[0].clientX;
-  const yDiff = touchYStart - e.touches[0].clientY;
-
-  if (Math.abs(xDiff) > Math.abs(yDiff)) { // Horizontal movement
-    if (xDiff > 0 && xVelocity !== 1) { // Swipe left
-      xVelocity = -1;
-      yVelocity = 0;
-    } else if (xDiff < 0 && xVelocity !== -1) { // Swipe right
-      xVelocity = 1;
-      yVelocity = 0;
+drawGame();
